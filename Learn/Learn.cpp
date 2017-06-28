@@ -1,32 +1,9 @@
 // Learn.cpp : 定义控制台应用程序的入口点。
 //
-#pragma comment(lib, "MSIMG32.LIB")
-#include "stdio.h"
-#include "string.h"
-#include "string"
-#include "cstring"
-#include "graphics.h"
-#include "iostream"
-#include "vector"
-#include "time.h"
-#include "conio.h"
-#include "stdlib.h"
-#include "math.h"
 
+#include "object.h"
 
-using namespace std;
-
-#define MaxWeight 600
-#define MaxHigh 400
-#define TankWeight 50
-#define TankHigh 50
-#define PlaneWeight 50
-#define PlaneHigh 50
-#define FireWeight 50
-#define FireHigh 350
-#define MaxTime 7
-
-IMAGE pic, doctor, fire, boom, tank, plane;
+IMAGE pic, doctor, fire, boom, tank, plane, biu;
 HDC PicHDC;
 
 struct Boom {
@@ -168,6 +145,10 @@ int GetD() {//上0下1左2右3空格4
 }
 
 void InitImage() {
+	initgraph(MaxWeight, MaxHigh);
+
+	loadimage(&biu, _T("./source/biu.bmpp"), BiuWeight, BiuHigh);
+
 	loadimage(&boom, _T("./source/Boom.bmp"), TankWeight, TankHigh);
 
 	loadimage(&pic, _T("./walle.jpg"), MaxWeight, MaxHigh);
@@ -184,13 +165,11 @@ void InitImage() {
 int main() {
 	int x = MaxWeight / 2, y = MaxHigh - 50;
 	
-	long int TankStart = clock(), PlaneStart = clock();
+	long int TankStart = clock(), PlaneStart = clock(), BoomStart = clock();
 
 	Tank selfTank;
 	
 	srand((unsigned)time(NULL));
-
-	initgraph(MaxWeight, MaxHigh);
 
 	InitImage();
 
@@ -199,14 +178,6 @@ int main() {
 		PicHDC = GetImageHDC(&pic);
 		InitTank(&selfTank, x, y);
 		TranImage(&selfTank);
-		if (_kbhit()) {
-			switch (GetD()) {
-			case 4: vboom.push_back(InitBoom(x, y)); break;
-			case 2: x -= 20; break;
-			case 3: x += 20; break;
-			default: break;
-			}
-		}
 		if (clock() - PlaneStart >= 100) {
 			if (clock() % 7 == 0) {
 				vplane.push_back(InitPlane(MaxWeight, rand() % 201));
@@ -215,6 +186,20 @@ int main() {
 		}
 		if (clock() - TankStart >= 50) {
 			FirePlane();
+			TankStart = clock();
+		}
+		if (clock() - BoomStart >= 20) {
+			if (_kbhit()) {
+				if (GetAsyncKeyState(VK_LEFT)) {
+					if(x > 0) x -= 20;
+				}
+				if (GetAsyncKeyState(VK_RIGHT)) {
+					if(x < MaxWeight - 20) x += 20;
+				}
+				if (GetAsyncKeyState(VK_SPACE)) {
+					vboom.push_back(InitBoom(x, y));
+				}
+			}
 			FireBoom();
 			SetWorkingImage();
 			putimage(0, 0, &pic);
@@ -222,7 +207,6 @@ int main() {
 		}
 		Destory();
 	}
-	
 	system("pause");
 	return 0;
 }
