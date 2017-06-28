@@ -1,0 +1,7 @@
+﻿  Learn.cpp
+d:\c++\learn\learn\learn.cpp(62): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++\learn\learn\learn.cpp(101): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++\learn\learn\learn.cpp(141): warning C4018: “<”: 有符号/无符号不匹配
+d:\c++\learn\learn\learn.cpp(143): warning C4018: “<”: 有符号/无符号不匹配
+  Learn.vcxproj -> D:\C++\Learn\Debug\Learn.exe
+  Learn.vcxproj -> D:\C++\Learn\Debug\Learn.pdb (Full PDB)
