@@ -1,8 +1,9 @@
 ﻿  Learn.cpp
-d:\git_windows\tankvsplane\learn\object.h(61): warning C4018: “<”: 有符号/无符号不匹配
-d:\git_windows\tankvsplane\learn\learn.cpp(39): warning C4018: “<”: 有符号/无符号不匹配
+d:\git_windows\tankvsplane\learn\learn.cpp(40): warning C4018: “<”: 有符号/无符号不匹配
 d:\git_windows\tankvsplane\learn\learn.cpp(78): warning C4018: “<”: 有符号/无符号不匹配
-d:\git_windows\tankvsplane\learn\learn.cpp(118): warning C4018: “<”: 有符号/无符号不匹配
-d:\git_windows\tankvsplane\learn\learn.cpp(120): warning C4018: “<”: 有符号/无符号不匹配
+d:\git_windows\tankvsplane\learn\learn.cpp(121): warning C4018: “<”: 有符号/无符号不匹配
+d:\git_windows\tankvsplane\learn\learn.cpp(161): warning C4018: “<”: 有符号/无符号不匹配
+d:\git_windows\tankvsplane\learn\learn.cpp(163): warning C4018: “<”: 有符号/无符号不匹配
+d:\git_windows\tankvsplane\learn\learn.cpp(173): warning C4018: “<”: 有符号/无符号不匹配
   Learn.vcxproj -> D:\git_windows\TankVsPlane\Debug\Learn.exe
   Learn.vcxproj -> D:\git_windows\TankVsPlane\Debug\Learn.pdb (Full PDB)

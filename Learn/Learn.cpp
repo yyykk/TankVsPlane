@@ -5,6 +5,45 @@
 
 IMAGE pic, doctor, fire, boom, tank, plane, biu;
 HDC PicHDC;
+int life = 3;
+
+struct object {
+	int time;
+	int x;
+	int y;
+	HDC imghdc;
+	int maskcolor;
+};
+
+vector<object> vbiu;
+
+object Initobject(int x, int y) {
+	DWORD *pmask;
+	object Newobject;
+	Newobject.time = 7 * 4;
+	Newobject.x = x;
+	Newobject.y = y;
+	Newobject.imghdc = GetImageHDC(&biu);
+	pmask = GetImageBuffer(&biu);
+	Newobject.maskcolor = BGR(pmask[0]);
+	return Newobject;
+}
+
+void TranImage(struct object *object) {
+	TransparentBlt(PicHDC, object->x, object->y,
+		BiuWeight, BiuHigh, object->imghdc,
+		0, 0,
+		BiuWeight, BiuHigh, object->maskcolor);
+}
+
+void Fireobject(vector<object> &vobject) {
+	for (int i = 0; i < vobject.size(); ++i) {
+		if (vobject[i].y < MaxHigh && vobject[i].time > 0) {
+			vobject[i].y += BiuHigh / 6;
+			TranImage(&vobject[i]);
+		}
+	}
+}
 
 struct Boom {
 	int time;
@@ -37,8 +76,7 @@ void TranImage(struct Boom *boom) {
 
 void FireBoom() {
 	for (int i = 0; i < vboom.size(); ++i) {
-		if (vboom[i].time > 0) {
-			vboom[i].time -= 1;
+		if (vboom[i].y > 0) {
 			vboom[i].y -= TankHigh / 4;
 			TranImage(&vboom[i]);
 		}
@@ -49,18 +87,23 @@ struct Plane {
 	int time;
 	int x;
 	int y;
+	int d;
 	HDC imghdc;
 	int maskcolor;
 };
 
 vector<Plane> vplane;
 
-Plane InitPlane(int x, int y) {
+Plane InitPlane(int x, int y, int d) {
 	DWORD *pmask;
 	Plane SlefPlane;
 	SlefPlane.time = 12 * 4;
 	SlefPlane.x = x;
+	if (d == 1) {
+		SlefPlane.x = 0;
+	}
 	SlefPlane.y = y;
+	SlefPlane.d = d;
 	SlefPlane.imghdc = GetImageHDC(&plane);
 	pmask = GetImageBuffer(&plane);
 	SlefPlane.maskcolor = BGR(pmask[0]);
@@ -74,11 +117,17 @@ void TranImage(struct Plane *plane) {
 		PlaneWeight, PlaneHigh, plane->maskcolor);
 }
 
-void FirePlane() {
+void FirePlaneRight() {
 	for (int i = 0; i < vplane.size(); ++i) {
-		if (vplane[i].time > 0) {
-			vplane[i].time -= 1;
-			vplane[i].x -= PlaneHigh / 4;
+		if (vplane[i].x >= 0 && vplane[i].x <= MaxWeight && vplane[i].time > 0) {
+			if (vplane[i].d == 0) {
+				vplane[i].x -= PlaneHigh / 4;
+			}else {
+				vplane[i].x += PlaneHigh / 4;
+			}
+			if (rand() % 7 == 0 && rand() % 7 == 0) {
+				vbiu.push_back(Initobject(vplane[i].x, vplane[i].y + 50));
+			}
 			TranImage(&vplane[i]);
 		}
 	}
@@ -107,18 +156,12 @@ void TranImage(struct Tank *tank) {
 		PlaneWeight, PlaneHigh, tank->maskcolor);
 }
 
-int GetKeyValue() {
-	int KeyValue;
-	KeyValue = _getwch();
-	return KeyValue;
-}
-
-void Destory() {
-	int i = 0, j = 0;
+void Destory(int x) {
+	int i = 0, j = 0, k = 0;
 	for (; i < vplane.size(); ++i) {
- 		if (vplane[i].time == 0) continue;
+ 		if (vplane[i].time <= 0) continue;
  		for (; j < vboom.size(); ++j) {
-			if (vboom[j].time == 0) continue;
+			if (vboom[j].time <= 0) continue;
 			if ((abs(vplane[i].x - vboom[j].x) <= PlaneHigh) && (abs(vplane[i].y - vboom[j].y) <= PlaneWeight)) {
 				vplane[i].time = 0;
 				vboom[j].time = 0;
@@ -126,28 +169,24 @@ void Destory() {
 			}
 		}
 	}
-}
-
-int GetD() {//ÉÏ0ÏÂ1×ó2ÓÒ3¿Õ¸ñ4
-	int D = 0, value = 0;
-	value = GetKeyValue();
-	if (value == 32) {
-		D = 4;
-	}else if (value == 224) {
-		switch (GetKeyValue()) {
-			case 72: D = 0; break;
-			case 80: D = 1; break;
-			case 75: D = 2; break;
-			case 77: D = 3; break;
+	if (life > 0) {
+		for (; k < vbiu.size(); ++k) {
+			if (vbiu[k].y > MaxHigh) continue;
+			if (MaxHigh - vbiu[k].y < TankHigh && vbiu[k].x - x < TankWeight && vbiu[k].x - x > 0) {
+				vbiu[k].time = 0;
+				life -= 1;
+				if (life <= 0) {
+					loadimage(&tank, _T("./source/doctor.jpg"), TankWeight, TankHigh);
+				}
+			}
 		}
 	}
-	return D;
 }
 
 void InitImage() {
 	initgraph(MaxWeight, MaxHigh);
 
-	loadimage(&biu, _T("./source/biu.bmpp"), BiuWeight, BiuHigh);
+	loadimage(&biu, _T("./source/biu.bmp"), BiuWeight, BiuHigh);
 
 	loadimage(&boom, _T("./source/Boom.bmp"), TankWeight, TankHigh);
 
@@ -165,7 +204,7 @@ void InitImage() {
 int main() {
 	int x = MaxWeight / 2, y = MaxHigh - 50;
 	
-	long int TankStart = clock(), PlaneStart = clock(), BoomStart = clock();
+	long int TankStart = clock(), PlaneStart = clock(), BoomStart = clock(), BiuStart = clock();
 
 	Tank selfTank;
 	
@@ -179,14 +218,18 @@ int main() {
 		InitTank(&selfTank, x, y);
 		TranImage(&selfTank);
 		if (clock() - PlaneStart >= 100) {
-			if (clock() % 7 == 0) {
-				vplane.push_back(InitPlane(MaxWeight, rand() % 201));
+			if (rand() % 3 == 0) {
+				vplane.push_back(InitPlane(MaxWeight, rand() % 201, rand() % 2));
 			}
 			PlaneStart = clock();
 		}
 		if (clock() - TankStart >= 50) {
-			FirePlane();
+			FirePlaneRight();
 			TankStart = clock();
+		}
+		if (clock() - BiuStart >= 50) {
+			Fireobject(vbiu);
+			BiuStart = clock();
 		}
 		if (clock() - BoomStart >= 20) {
 			if (_kbhit()) {
@@ -195,6 +238,10 @@ int main() {
 				}
 				if (GetAsyncKeyState(VK_RIGHT)) {
 					if(x < MaxWeight - 20) x += 20;
+				}
+				if (GetAsyncKeyState(VK_ESCAPE)) {
+					life += 1;
+					loadimage(&tank, _T("./source/Tank.bmp"), TankWeight, TankHigh);
 				}
 				if (GetAsyncKeyState(VK_SPACE)) {
 					vboom.push_back(InitBoom(x, y));
@@ -205,7 +252,7 @@ int main() {
 			putimage(0, 0, &pic);
 			TankStart = clock();
 		}
-		Destory();
+		Destory(x);
 	}
 	system("pause");
 	return 0;
